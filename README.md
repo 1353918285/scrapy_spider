@@ -3,6 +3,7 @@
 ```
 · pip安装scrapy：pip install scrapy
 · 创建scrapy项目：scrapy startproject mySpider
+· cd mySpider
 ```
 在当前目录下输入命令，将在mySpider/spider目录下创建一个名为job51的爬虫
 ```
