@@ -48,6 +48,7 @@ def job_count():
         wordcount[word] = wordcount.get(word, 0)+1
     #对单词进行词频统计，输出词频最多的10
     word_sort = sorted(wordcount.items(), key=lambda x: x[1], reverse=True)[:15]
+    print(word_sort)
     for word in word_sort:
         sql = "insert into job_count (job_name,j_count) values {} ".format(word)
         print(sql)

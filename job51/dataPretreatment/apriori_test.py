@@ -3,7 +3,7 @@ import pymysql
 from job51.job51.settings import *
 
 
-def connectMysql():
+def connectMysql(sql):
     # 连接数据库
     conn = pymysql.connect(
         host=MYSQL_HOST,
@@ -13,15 +13,19 @@ def connectMysql():
         charset=MYSQL_CHARSET
     )
     # 创建游标，执行sql语句
+    # 创建游标，执行sql语句
     cur = conn.cursor()
-    cur.execute("select salary,job_name,address,work_year,education from job51")
+    cur.execute(sql)
+    conn.commit()
     resultList = cur.fetchall()
+    cur.close()
+    conn.close()
     return resultList
 
-
 def load_data():
+    connectMysql("truncate table apriori")
     result = []
-    resultList = connectMysql()
+    resultList = connectMysql("select job_name,salary,address,work_year,education from job51")
     for res in resultList:
         result.append(list(res))
     return result
@@ -151,9 +155,24 @@ def calcConf(freqSet, H, supportData, ruleList, minConf=0.7):
         lift = supportData[freqSet] / (supportData[conseq] * supportData[freqSet - conseq])
 
         if conf >= minConf and lift > 1:
-            print(freqSet - conseq, '-->', conseq, '支持度', round(supportData[freqSet], 6), '置信度：', round(conf, 6),
-                  'lift值为：', round(lift, 6))
-            ruleList.append((freqSet - conseq, conseq, conf))
+            if (len(freqSet- conseq) > 1):
+                # print(freqSet - conseq, '-->', conseq, '支持度', round(supportData[freqSet], 6), '置信度：', round(conf, 6),
+                #       'lift值为：', round(lift, 6))
+                # print("*"*200)
+                leftItems = freqSet - conseq
+                rightItems = conseq
+                rightItem = []
+                leftItem = []
+                for litem in leftItems:
+                    leftItem.append(litem)
+                for ritem in rightItems:
+                    rightItem.append(ritem)
+                support = round(supportData[freqSet], 6)
+                params = ('->'.join(leftItem),'->'.join(rightItem),support,round(conf, 6),round(lift, 6))
+                sql = "insert into apriori (leftItem,rightItem,support,confience,lift) values {} ".format(params)
+                print(sql)
+                connectMysql(sql)
+                ruleList.append((freqSet - conseq, conseq, conf))
 
 
 # 生成规则
@@ -170,6 +189,6 @@ def gen_rule(L, supportData, minConf=0.7):
 
 
 if __name__ == '__main__':
-    dataSet = load_data()[:1000]
-    L, supportData = apriori(dataSet, minSupport=0.01)
+    dataSet = load_data()[:100000]
+    L, supportData = apriori(dataSet, minSupport=0.05)
     rule = gen_rule(L, supportData, minConf=0.3)

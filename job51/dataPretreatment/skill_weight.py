@@ -1,6 +1,5 @@
 import csv
 import jieba.analyse
-import jieba.posseg as pseg
 import sys
 
 from job51.dataPretreatment.dataClean import connectMysql
@@ -47,7 +46,7 @@ def skill_weight():
         text = jieba.analyse.TextRank()
         text.span = 8
         ws = text.textrank(final_sentence, topK=12, withWeight=True, allowPOS=['eng', 'n'])
-        # ws = jieba.analyse.extract_tags(final_sentence, topK=10, withWeight=True, allowPOS=['eng', 'n'])
+      #  ws = jieba.analyse.extract_tags(final_sentence, topK=10, withWeight=True, allowPOS=['eng', 'n'])
         for w in ws:
             sql = "insert into skill_weight_python (skill,weight) values {} ".format(w)
             print(sql)
